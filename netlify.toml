@@ -1,0 +1,9 @@
+# Archivo: netlify.toml
+# Nexus OS v11.1 - Configuracion de Despliegue CI/CD en Netlify para Axioma Core
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
