@@ -1,0 +1,26 @@
+{
+  "name": "axioma-core",
+  "version": "1.0.0",
+  "description": "Plataforma de telemetría personal, bio-alineación y coherencia neurovisceral con experiencia cinemática IMAX. Integra captura multimodal, diagnóstico en lenguaje humano y generación de planes tácticos de 7 días con seguimiento continuo.",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3010",
+    "build": "next build",
+    "start": "next start -p 3010"
+  },
+  "dependencies": {
+    "lucide-react": "^0.469.0",
+    "next": "^15.1.0",
+    "postcss": "^8.5.28",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.9.3"
+  }
+}
