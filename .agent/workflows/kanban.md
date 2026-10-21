@@ -15,3 +15,4 @@ Estructura soberana de orquestación (Nexus OS v11.1).
 - [x] **[TASK-004]** Arquitectura de Telemetría Multimodal & Latencia Dramática (audioMetrics DSP, opticalMetrics PPG, useTelemetryStore Zustand, DramaticLatency HUD, Build OK)
 - [x] **[TASK-005]** Pantalla de Dictamen Táctico & Compuerta de Conversión Web-to-App (TacticalVerdict IGC/Paradoja, PaywallGate $14.99 USD, page.tsx Ciclo Completo, Build OK)
 - [x] **[TASK-DEVOPS]** Pipeline CI/CD GitHub & Despliegue Producción Netlify (Repo GitHub escueladecotortas/proyecto-axioma, Next 15.3.9 Security Patch, Netlify HTTPS Live OK)
+- [x] **[TASK-006]** Refonte UX: Teleprompter Vocal, Veredicto Humano & Descarga Directa de Dossier (BiometricSensor TSX Dual, dossierGenerator HTML, PaywallGate Download Direct, Netlify Live OK)
