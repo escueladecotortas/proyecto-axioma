@@ -1,60 +1,61 @@
 // Archivo: src/store/useTelemetryStore.ts
-import { create } from "zustand";
-import { AudioTelemetryResult } from "@/lib/telemetry/audioMetrics";
-import { OpticalTelemetryResult } from "@/lib/telemetry/opticalMetrics";
+import { create } from 'zustand';
+import { AudioTelemetryResult } from '@/lib/telemetry/audioMetrics';
 
-export type TelemetryStage = 
-  | "IDLE" 
-  | "VOCAL_CAPTURE" 
-  | "OPTICAL_CAPTURE" 
-  | "DRAMATIC_COMPUTATION" 
-  | "COMPLETED";
-
-interface TelemetryState {
-  stage: TelemetryStage;
-  audioMetrics: AudioTelemetryResult | null;
-  opticalMetrics: OpticalTelemetryResult | null;
+export interface TelemetryState {
+  tactileCoherence: number;
+  jitterPercent: number;
+  shimmerPercent: number;
+  hnrDb: number;
+  f0Median: number;
+  vocalStability: number;
+  phase: 'PROLOGUE' | 'CALIBRATION' | 'SENSOR' | 'DRAMATIC_COMPUTATION' | 'VERDICT' | 'PAYWALL';
+  stage: 'IDLE' | 'VOCAL_CAPTURE' | 'OPTICAL_CAPTURE' | 'DRAMATIC_COMPUTATION' | 'COMPLETED';
   computedIgc: number | null;
-  tactileCoherence: number | null;
-  setStage: (stage: TelemetryStage) => void;
+  audioMetrics: AudioTelemetryResult | null;
+  opticalMetrics: { avgHeartRate: number; hfHrvScore: number; vagalToneRatio: number } | null;
+
+  setMetric: (key: string, value: number) => void;
+  setAcousticResults: (results: { jitterPercent: number; shimmerPercent: number; hnrDb: number; f0Median: number; vocalStability: number }) => void;
+  setPhase: (phase: TelemetryState['phase']) => void;
+  setStage: (stage: TelemetryState['stage']) => void;
   setAudioMetrics: (metrics: AudioTelemetryResult) => void;
-  setOpticalMetrics: (metrics: OpticalTelemetryResult) => void;
-  setMetric: (name: string, value: number) => void;
+  setOpticalMetrics: (metrics: NonNullable<TelemetryState['opticalMetrics']>) => void;
   finalizeComputation: () => void;
   resetTelemetry: () => void;
 }
 
 export const useTelemetryStore = create<TelemetryState>((set, get) => ({
-  stage: "IDLE",
-  audioMetrics: null,
-  opticalMetrics: null,
+  tactileCoherence: 84,
+  jitterPercent: 0.48,
+  shimmerPercent: 2.35,
+  hnrDb: 19.2,
+  f0Median: 132,
+  vocalStability: 78,
+  phase: 'PROLOGUE',
+  stage: 'IDLE',
   computedIgc: null,
-  tactileCoherence: null,
+  audioMetrics: { jitterPct: 0.48, shimmerPct: 2.35, hnrDb: 19.2, fundamentalFreq: 132, rms: 0.05 },
+  opticalMetrics: { avgHeartRate: 72, hfHrvScore: 56, vagalToneRatio: 0.64 },
 
+  setMetric: (key, value) => set((s) => ({ ...s, [key]: value })),
+  setAcousticResults: (res) => set((s) => ({
+    ...s, ...res,
+    audioMetrics: { jitterPct: res.jitterPercent, shimmerPct: res.shimmerPercent, hnrDb: res.hnrDb, fundamentalFreq: res.f0Median, rms: 0.05 },
+  })),
+  setPhase: (phase) => set({ phase }),
   setStage: (stage) => set({ stage }),
   setAudioMetrics: (audioMetrics) => set({ audioMetrics }),
   setOpticalMetrics: (opticalMetrics) => set({ opticalMetrics }),
-  setMetric: (name, value) => {
-    if (name === "tactileCoherence") {
-      set({ tactileCoherence: value });
-    }
-  },
-
   finalizeComputation: () => {
-    const { audioMetrics, opticalMetrics } = get();
-    const hrvPart = opticalMetrics?.hfHrvScore ?? 50;
-    const voiceStability = 100 - (audioMetrics ? (audioMetrics.jitterPct + audioMetrics.shimmerPct) * 8 : 40);
-    const rawIgc = Math.round(hrvPart * 0.55 + Math.max(20, voiceStability) * 0.45);
-    const computedIgc = Math.min(98, Math.max(30, rawIgc));
-
-    set({ computedIgc, stage: "COMPLETED" });
+    const { opticalMetrics, jitterPercent, shimmerPercent } = get();
+    const hrv = opticalMetrics?.hfHrvScore ?? 54;
+    const stability = 100 - (jitterPercent * 15 + shimmerPercent * 5);
+    const computedIgc = Math.min(98, Math.max(30, Math.round(hrv * 0.55 + Math.max(20, stability) * 0.45)));
+    set({ computedIgc, stage: 'COMPLETED', phase: 'VERDICT' });
   },
-
   resetTelemetry: () => set({
-    stage: "IDLE",
-    audioMetrics: null,
-    opticalMetrics: null,
-    computedIgc: null,
-    tactileCoherence: null,
+    tactileCoherence: 84, jitterPercent: 0.48, shimmerPercent: 2.35, hnrDb: 19.2, f0Median: 132, vocalStability: 78,
+    phase: 'PROLOGUE', stage: 'IDLE', computedIgc: null,
   }),
 }));

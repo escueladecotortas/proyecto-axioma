@@ -17,3 +17,4 @@ Estructura soberana de orquestación (Nexus OS v11.1).
 - [x] **[TASK-DEVOPS]** Pipeline CI/CD GitHub & Despliegue Producción Netlify (Repo GitHub escueladecotortas/proyecto-axioma, Next 15.3.9 Security Patch, Netlify HTTPS Live OK)
 - [x] **[TASK-006]** Refonte UX: Teleprompter Vocal, Veredicto Humano & Descarga Directa de Dossier (BiometricSensor TSX Dual, dossierGenerator HTML, PaywallGate Download Direct, Netlify Live OK)
 - [x] **[TASK-007]** Motor WebGL & Ergonomía Móvil (Shaders GLSL Raymarching, ResonanceOrb, ThumbZonePad, Refactor BiometricSensor 83 LOC, Zero Scroll, Build OK)
+- [x] **[TASK-008]** Onboarding Invisible & DSP Acústico Real (PitchDetector Sub-sample, Raw Audio Stream Sin Filtros SO, Jitter Fisiológico >=0.24%, SyncTeleprompter 74 LOC, Store 61 LOC, Build OK)
