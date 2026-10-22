@@ -1,104 +1,82 @@
 // Archivo: src/components/telemetry/PaywallGate.tsx
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { useTelemetryStore } from "@/store/useTelemetryStore";
-import { downloadDossierReport } from "@/lib/telemetry/dossierGenerator";
+import React, { useState } from 'react';
+import { useTelemetryStore } from '../../store/useTelemetryStore';
+import { generateForensicDossierPDF } from '../../lib/telemetry/dossierGenerator';
+import { Download, FileCheck2, Loader2, Sparkles, ArrowLeft } from 'lucide-react';
 
 interface PaywallGateProps {
-  onBackToVerdict: () => void;
+  onBackToVerdict?: () => void;
 }
 
 export const PaywallGate: React.FC<PaywallGateProps> = ({ onBackToVerdict }) => {
-  const [email, setEmail] = useState("");
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [isCompiling, setIsCompiling] = useState(false);
+  const t = useTelemetryStore();
 
-  const { computedIgc, audioMetrics, opticalMetrics } = useTelemetryStore();
+  const handleDownloadDossier = async () => {
+    try {
+      setIsCompiling(true);
+      const pdfBlob = await generateForensicDossierPDF({
+        jitterPercent: t.jitterPercent,
+        shimmerPercent: t.shimmerPercent,
+        hnrDb: t.hnrDb,
+        f0Median: t.f0Median,
+        tactileCoherence: t.tactileCoherence,
+        vocalStability: t.vocalStability,
+      });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) return;
-    setIsProcessing(true);
-    setTimeout(() => {
-      setIsProcessing(false);
-      setSuccess(true);
-      // Descarga automática inmediata
-      downloadDossierReport(email, computedIgc ?? 62, audioMetrics, opticalMetrics);
-    }, 1000);
-  };
-
-  const handleManualDownload = () => {
-    downloadDossierReport(email || "operador@axioma.core", computedIgc ?? 62, audioMetrics, opticalMetrics);
+      const url = URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `AXIOMA_DOSSIER_FORENSE_${Date.now().toString().slice(-6)}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Error al compilar el PDF forense:", err);
+    } finally {
+      setIsCompiling(false);
+    }
   };
 
   return (
-    <div className="w-full max-w-xl mx-auto p-6 bg-[#050505] border border-neutral-800 rounded-xl text-neutral-200 font-mono shadow-2xl space-y-6">
-      <div className="flex items-center justify-between pb-3 border-b border-neutral-800">
-        <span className="text-xs uppercase tracking-widest text-[#00F2FE]">
-          Expediente Personal // Descarga Inmediata
-        </span>
-        <button
-          onClick={onBackToVerdict}
-          className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors cursor-pointer"
-        >
-          [VOLVER]
+    <main className="w-full min-h-[100dvh] bg-neutral-950 text-neutral-100 flex flex-col items-center justify-center px-4 py-8 relative">
+      {onBackToVerdict && (
+        <button onClick={onBackToVerdict} className="absolute top-6 left-6 text-xs text-neutral-400 hover:text-neutral-200 flex items-center gap-1 font-mono cursor-pointer">
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Volver al Dictamen</span>
+        </button>
+      )}
+
+      <div className="w-full max-w-md p-6 rounded-2xl border border-neutral-800 bg-neutral-900/80 backdrop-blur-md shadow-2xl text-center space-y-5">
+        <div className="w-14 h-14 mx-auto rounded-full bg-emerald-950/60 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+          <FileCheck2 className="w-7 h-7" />
+        </div>
+
+        <div className="space-y-1">
+          <span className="text-[10px] font-mono tracking-widest text-emerald-400 uppercase">Acceso Autorizado // v12.0</span>
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-100">Dossier Forense Completo</h2>
+          <p className="text-xs text-neutral-400 font-mono">Documento vectorial A4 estructurado con Hash SHA-256 y protocolo de 7 días.</p>
+        </div>
+
+        <div className="text-left p-3.5 rounded-xl bg-neutral-950/60 border border-neutral-800 text-[11px] font-mono text-neutral-300 space-y-1">
+          <p className="flex items-center gap-1.5 text-emerald-400"><Sparkles className="w-3.5 h-3.5" /> Expediente Clínico de 3 Secciones</p>
+          <p>• Carátula y Hash Criptográfico Forense</p>
+          <p>• Topografía Microacústica & Varianza Autonómica</p>
+          <p>• Protocolo Cronobiológico de Descompresión Diaria</p>
+        </div>
+
+        <button onClick={handleDownloadDossier} disabled={isCompiling} className="w-full py-3.5 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:bg-neutral-800 text-neutral-950 font-medium text-sm flex items-center justify-center gap-2 transition-all shadow-[0_0_25px_rgba(16,185,129,0.35)] cursor-pointer">
+          {isCompiling ? (
+            <><Loader2 className="w-4 h-4 animate-spin" /><span>Compilando Expediente PDF...</span></>
+          ) : (
+            <><Download className="w-4 h-4" /><span>Descargar Expediente PDF Oficial</span></>
+          )}
         </button>
       </div>
-
-      {!success ? (
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <h3 className="text-sm font-semibold text-neutral-100">
-              Obtené tu Dossier de Coherencia y Plan de 7 Días
-            </h3>
-            <p className="text-xs text-neutral-400 leading-relaxed">
-              Ingresá tu correo para descargar el informe completo con el desglose de tu tensión y las
-              acciones prácticas día por día para desactivar el estado de alerta.
-            </p>
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-[11px] text-neutral-400 uppercase">
-              Tu Correo Electrónico
-            </label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="tuemail@ejemplo.com"
-              className="w-full px-3 py-2.5 bg-[#0c0c0c] border border-neutral-700 rounded-lg text-xs text-neutral-100 focus:outline-none focus:border-[#00F2FE]"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={isProcessing}
-            className="w-full py-3.5 bg-[#00F2FE] hover:bg-[#38bdf8] text-neutral-950 font-bold text-xs uppercase tracking-widest rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
-          >
-            {isProcessing ? "Generando Expediente..." : "Descargar Mi Dossier Ahora"}
-          </button>
-        </form>
-      ) : (
-        <div className="p-6 bg-[#0c0c0c] border border-[#00F2FE]/40 rounded-lg text-center space-y-4">
-          <div className="w-10 h-10 rounded-full bg-[#00F2FE]/20 text-[#00F2FE] mx-auto flex items-center justify-center font-bold">
-            ✓
-          </div>
-          <h4 className="text-sm font-bold text-neutral-100">¡Tu Dossier se generó con éxito!</h4>
-          <p className="text-xs text-neutral-400">
-            El archivo fue generado para <strong>{email}</strong>. Si tu navegador no inició la descarga automáticamente, tocala acá:
-          </p>
-
-          <button
-            onClick={handleManualDownload}
-            className="w-full py-3 bg-[#00F2FE] hover:bg-[#38bdf8] text-neutral-950 font-bold text-xs uppercase tracking-widest rounded-lg transition-colors cursor-pointer shadow-lg"
-          >
-            📥 Descargar Dossier (Archivo Directo)
-          </button>
-        </div>
-      )}
-    </div>
+    </main>
   );
 };
 
