@@ -15,9 +15,11 @@ interface TelemetryState {
   audioMetrics: AudioTelemetryResult | null;
   opticalMetrics: OpticalTelemetryResult | null;
   computedIgc: number | null;
+  tactileCoherence: number | null;
   setStage: (stage: TelemetryStage) => void;
   setAudioMetrics: (metrics: AudioTelemetryResult) => void;
   setOpticalMetrics: (metrics: OpticalTelemetryResult) => void;
+  setMetric: (name: string, value: number) => void;
   finalizeComputation: () => void;
   resetTelemetry: () => void;
 }
@@ -27,10 +29,16 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
   audioMetrics: null,
   opticalMetrics: null,
   computedIgc: null,
+  tactileCoherence: null,
 
   setStage: (stage) => set({ stage }),
   setAudioMetrics: (audioMetrics) => set({ audioMetrics }),
   setOpticalMetrics: (opticalMetrics) => set({ opticalMetrics }),
+  setMetric: (name, value) => {
+    if (name === "tactileCoherence") {
+      set({ tactileCoherence: value });
+    }
+  },
 
   finalizeComputation: () => {
     const { audioMetrics, opticalMetrics } = get();
@@ -47,5 +55,6 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
     audioMetrics: null,
     opticalMetrics: null,
     computedIgc: null,
+    tactileCoherence: null,
   }),
 }));
